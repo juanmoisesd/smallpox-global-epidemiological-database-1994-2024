@@ -1,0 +1,13 @@
+from setuptools import setup, find_packages
+setup(
+    name="smallpox-global-epidemiological-database-1994-2024",
+    version="1.0.0",
+    description="Evolution of Smallpox Cases by Country: Global Epidemiological Database 1994-2024. DOI: 10.17632/xhb",
+    author="de la Serna, Juan Moisés",
+    url="https://github.com/juanmoisesd/smallpox-global-epidemiological-database-1994-2024",
+    packages=find_packages(),
+    install_requires=["pandas>=1.3.0","requests>=2.26.0"],
+    python_requires=">=3.7",
+    classifiers=["Programming Language :: Python :: 3","License :: OSI Approved :: MIT License","Topic :: Scientific/Engineering"],
+    keywords="zenodo, open-data",
+)
