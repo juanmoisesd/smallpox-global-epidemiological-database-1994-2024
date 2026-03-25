@@ -4,23 +4,17 @@
   "name": "Evolution of Smallpox Cases by Country: Global Epidemiological Database 1994-2024. DOI: 10.17632/xhb",
   "version": "1.0.0",
   "identifier": "https://github.com/juanmoisesd/smallpox-global-epidemiological-database-1994-2024",
-  "datePublished": "2025",
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "codeRepository": "https://github.com/juanmoisesd/smallpox-global-epidemiological-database-1994-2024",
   "author": [
     {
       "@type": "Person",
       "givenName": "Juan Moisés",
-      "familyName": "de la Serna",
-      "affiliation": {
-        "@type": "Organization",
-        "name": "Universidad Internacional de La Rioja (UNIR)"
-      }
+      "familyName": "de la Serna"
     }
   ],
   "programmingLanguage": [
     "Python",
     "Jupyter Notebook"
-  ],
-  "keywords": ""
+  ]
 }
