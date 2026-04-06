@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Base de Datos Epidemiológica: Viruela Global 1994-2024</title>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
+      <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+
+                body {
+                              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                              min-height: 100vh;
+                              color: #333;
+                }
+
+                .header {
+                              background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                              color: white;
+                              padding: 2rem;
+                              margin-bottom: 2rem;
+                              box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                }
+
+                .header h1 {
+                              font-weight: 700;
+                              margin-bottom: 0.5rem;
+                              font-size: 2.5rem;
+                }
+
+                .header p {
+                              opacity: 0.95;
+                              font-size: 1.1rem;
+                }
+
+                .container-fluid {
+                              padding: 20px;
+                }
+
+                .dashboard {
+                              background: white;
+                              border-radius: 12px;
+                              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                              overflow: hidden;
+                              margin-bottom: 2rem;
+                }
+
+                .filters-panel {
+                              background: #f8f9fa;
+                              padding: 1.5rem;
+                              border-bottom: 2px solid #e9ecef;
+                }
+
+                .filter-group {
+                              margin-bottom: 1rem;
+                }
+
+                .filter-group label {
+                              font-weight: 600;
+                              color: #2c3e50;
+                              margin-bottom: 0.5rem;
+                              display: block;
+                }
+
+                .filter-group input,
+                .filter-group select {
+                              width: 100%;
+                              padding: 0.75rem;
+                              border: 2px solid #dee2e6;
+                              border-radius: 6px;
+                              font-size: 0.95rem;
+                              transition: all 0.3s ease;
+                }
+
+                .filter-group input:focus,
+                .filter-group select:focus {
+                              border-color: #667eea;
+                              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                              outline: none;
+                }
+
+                .stats-grid {
+                              display: grid;
+                              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                              gap: 1.5rem;
+                              padding: 2rem;
+                              border-bottom: 2px solid #e9ecef;
+                }
+
+                .stat-card {
+                              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                              color: white;
+                              padding: 1.5rem;
+                              border-radius: 10px;
+                              text-align: center;
+                              box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                              transition: transform 0.3s ease;
+                }
+
+                .stat-card:hover {
+                              transform: translateY(-5px);
+                }
+
+                .stat-card .value {
+                              font-size: 2.5rem;
+                              font-weight: 700;
+                              margin-bottom: 0.5rem;
+                }
+
+                .stat-card .label {
+                              font-size: 0.95rem;
+                              opacity: 0.9;
+                }
+
+                .tabs-container {
+                              padding: 2rem;
+                }
+
+                .tab-content {
+                              display: none;
+                }
+
+                .tab-content.active {
+                              display: block;
+                              animation: fadeIn 0.3s ease;
+                }
+
+                @keyframes fadeIn {
+                              from { opacity: 0; }
+                              to { opacity: 1; }
+                }
+
+                .nav-tabs .nav-link {
+                              color: #666;
+                              border: none;
+                              border-bottom: 3px solid transparent;
+                              font-weight: 600;
+                              margin-right: 1rem;
+                              cursor: pointer;
+                              transition: all 0.3s ease;
+                              padding-bottom: 0.75rem;
+                }
+
+                .nav-tabs .nav-link.active {
+                              color: #667eea;
+                              border-bottom-color: #667eea;
+                }
+
+                #map {
+                              height: 500px;
+                              border-radius: 10px;
+                              margin-top: 1rem;
+                              box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                }
+
+                .table-container {
+                              overflow-x: auto;
+                              margin-top: 1rem;
+                }
+
+                table {
+                              width: 100%;
+                              border-collapse: collapse;
+                }
+
+                thead {
+                              background: #f8f9fa;
+                }
+
+                th {
+                              font-weight: 600;
+                              color: #2c3e50;
+                              padding: 1rem;
+                              text-align: left;
+                              border-bottom: 2px solid #dee2e6;
+                }
+
+                td {
+                              padding: 0.75rem 1rem;
+                              border-bottom: 1px solid #dee2e6;
+                }
+
+                tbody tr:hover {
+                              background: #f8f9fa;
+                }
+
+                .chart-container {
+                              position: relative;
+                              height: 400px;
+                              margin-top: 2rem;
+                }
+
+                .button-group {
+                              display: flex;
+                              gap: 1rem;
+                              flex-wrap: wrap;
+                              margin: 1.5rem 0;
+                }
+
+                button {
+                              padding: 0.75rem 1.5rem;
+                              border: none;
+                              border-radius: 6px;
+                              font-weight: 600;
+                              cursor: pointer;
+                              transition: all 0.3s ease;
+                              font-size: 0.95rem;
+                }
+
+                .btn-primary {
+                              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                              color: white;
+                }
+
+                .btn-primary:hover {
+                              transform: translateY(-2px);
+                              box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                }
+
+                .btn-secondary {
+                              background: #e9ecef;
+                              color: #2c3e50;
+                }
+
+                .btn-secondary:hover {
+                              background: #dee2e6;
+                }
+
+                .search-input {
+                              position: relative;
+                }
+
+                .search-input i {
+                              position: absolute;
+                              right: 1rem;
+                              top: 50%;
+                              transform: translateY(-50%);
+                              color: #aaa;
+                }
+
+                .info-box {
+                              background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+                              padding: 1.5rem;
+                              border-left: 4px solid #667eea;
+                              border-radius: 6px;
+                              margin-bottom: 1.5rem;
+                }
+
+                .info-box strong {
+                              color: #1e3c72;
+                }
+
+                footer {
+                              background: #1e3c72;
+                              color: white;
+                              text-align: center;
+                              padding: 2rem;
+                              margin-top: 3rem;
+                }
+
+                @media (max-width: 768px) {
+                              .header h1 { font-size: 1.8rem; }
+                              .stats-grid { grid-template-columns: 1fr; }
+                              .button-group { flex-direction: column; }
+                }
+            </style>
+  </head>
+  <body>
+        <div class="header">
+                  <h1><i class="fas fa-globe"></i>i> Base de Datos Epidemiológica: Viruela</h1>
+                <p>Evolución de casos por país (1994-2024)</p>
+        </div>div>
+  
+      <div class="container-fluid">
+              <div class="dashboard">
+                          <!-- FILTROS -->
+                          <div class="filters-panel">
+                                          <div class="info-box">
+                                                              <strong><i class="fas fa-info-circle"></i>i> Bienvenido</strong>
+                                                              <p>Explora datos epidemiológicos globales sobre viruela. Filtra por país, año o tipo de virus para análisis detallados.</p>
+                                          </div>div>
+                          
+                                          <div class="row">
+                                                              <div class="col-md-3">
+                                                                                      <div class="filter-group">
+                                                                                                                  <label>País</label>
+                                                                                                                  <input type="text" id="countryFilter" placeholder="Buscar país..." class="form-control">
+                                                                                        </div>div>
+                                                              </div>div>
+                                                              <div class="col-md-3">
+                                                                                      <div class="filter-group">
+                                                                                                                  <label>Año Inicial</label>
+                                                                                                                  <input type="number" id="yearStart" min="1994" max="2024" value="1994">
+                                                                                        </div>div>
+                                                              </div>div>
+                                                              <div class="col-md-3">
+                                                                                      <div class="filter-group">
+                                                                                                                  <label>Año Final</label>
+                                                                                                                  <input type="number" id="yearEnd" min="1994" max="2024" value="2024">
+                                                                                        </div>div>
+                                                              </div>div>
+                                                              <div class="col-md-3">
+                                                                                      <div class="filter-group">
+                                                                                                                  <label>Tipo de Virus</label>
+                                                                                                                  <select id="virusType">
+                                                                                                                                                  <option value="">Todos</option>option>
+                                                                                                                                                  <option value="variola_major">Variola Major</option>option>
+                                                                                                                                                  <option value="variola_minor">Variola Minor</option>option>
+                                                                                                                                                  <option value="unknown">No especificado</option>option>
+                                                                                                                    </select>select>
+                                                                                        </div>div>
+                                                              </div>div>
+                                          </div>div>
+                          
+                                          <div class="button-group">
+                                                              <button class="btn-primary" onclick="applyFilters()">
+                                                                                      <i class="fas fa-filter"></i>i> Aplicar Filtros
+                                                              </button>button>
+                                                              <button class="btn-secondary" onclick="resetFilters()">
+                                                                                      <i class="fas fa-redo"></i>i> Restablecer
+                                                              </button>button>
+                                                              <button class="btn-secondary" onclick="exportData()">
+                                                                                      <i class="fas fa-download"></i>i> Descargar CSV
+                                                              </button>button>
+                                          </div>div>
+                          </div>div>
+              
+                          <!-- ESTADÍSTICAS -->
+                          <div class="stats-grid">
+                                          <div class="stat-card">
+                                                              <div class="value" id="totalCases">0</div>div>
+                                                              <div class="label">Casos Confirmados</div>div>
+                                          </div>div>
+                                          <div class="stat-card">
+                                                              <div class="value" id="totalCountries">0</div>div>
+                                                              <div class="label">Países Afectados</div>div>
+                                          </div>div>
+                                          <div class="stat-card">
+                                                              <div class="value" id="yearRange">1994-2024</div>div>
+                                                              <div class="label">Rango Temporal</div>div>
+                                          </div>div>
+                                          <div class="stat-card">
+                                                              <div class="value" id="avgCasesPerCountry">0</div>div>
+                                                              <div class="label">Promedio por País</div>div>
+                                          </div>div>
+                          </div>div>
+              
+                          <!-- TABS -->
+                          <div class="tabs-container">
+                                          <div class="nav-tabs" style="border-bottom: 2px solid #e9ecef; margin-bottom: 2rem;">
+                                                              <button class="nav-link active" onclick="showTab('overview')">
+                                                                                      <i class="fas fa-chart-line"></i>i> Resumen
+                                                              </button>button>
+                                                              <button class="nav-link" onclick="showTab('map')">
+                                                                                      <i class="fas fa-map"></i>i> Mapa
+                                                              </button>button>
+                                                              <button class="nav-link" onclick="showTab('table')">
+                                                                                      <i class="fas fa-table"></i>i> Datos
+                                                              </button>button>
+                                                              <button class="nav-link" onclick="showTab('top10')">
+                                                                                      <i class="fas fa-trophy"></i>i> Top 10
+                                                              </button>button>
+                                          </div>div>
+                          
+                                          <!-- TAB 1: RESUMEN -->
+                                          <div id="overview" class="tab-content active">
+                                                              <h3>Gráfico de Tendencias Globales</h3>
+                                                              <div class="chart-container">
+                                                                                      <canvas id="trendsChart"></canvas>canvas>
+                                                              </div>div>
+                                          </div>div>
+                          
+                                          <!-- TAB 2: MAPA -->
+                                          <div id="map" class="tab-content"></div>div>
+                          
+                                          <!-- TAB 3: TABLA -->
+                                          <div id="table" class="tab-content">
+                                                              <h3>Detalle de Registros</h3>
+                                                              <div class="table-container">
+                                                                                      <table id="dataTable">
+                                                                                                                  <thead>
+                                                                                                                                                    <tr>
+                                                                                                                                                                                          <th>País</th>
+                                                                                                                                                      <th>Año</th>
+                                                                                                                                                      <th>Casos Confirmados</th>
+                                                                                                                                                      <th>Tipo de Virus</th>
+                                                                                                                                                      <th>Región</th>
+                                                                                                                                                      </tr>
+                                                                                                                    </thead>
+                                                                                                                  <tbody id="tableBody">
+                                                                                                                    </tbody>tbody>
+                                                                                        </table>table>
+                                                              </div>div>
+                                          </div>div>
+                          
+                                          <!-- TAB 4: TOP 10 -->
+                                          <div id="top10" class="tab-content">
+                                                              <h3>Países con Mayor Número de Casos</h3>
+                                                              <div class="chart-container">
+                                                                                      <canvas id="top10Chart"></canvas>canvas>
+                                                              </div>div>
+                                          </div>div>
+                          </div>div>
+              </div>div>
+      </div>div>
+  
+      <footer>
+                <p><strong>Base de Datos Epidemiológica: Viruela Global 1994-2024</strong></p>
+              <p>Datos compilados de la OMS y vigilancia epidemiológica global | Licencia CC BY 4.0</p>
+              <p>© 2026 Juan Moisés de la Serna - Universidad Internacional de La Rioja (UNIR)</p>
+      </footer>
+  
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+      <script src="data.js"></script>
+      <script src="app.js"></script>
+  </body>
+</html>html></strong></p>
+      </footer></th></th>
+                                                                                                                                                    </tr>
+                                                                                                                  </thead></label></label></strong></p></h1>
+  </body>
+      </style></title>
+  </head>
